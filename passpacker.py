@@ -36,6 +36,7 @@ class PassPacker():
         if self.unlocked:
             return
         if not os.path.isfile(self.rsakey_filepath):
+            print(self.rsakey_filepath)
             self.passphrase = input_with_msg(
                 "set the password", show_input=True)
             rsa_file_func.gen_rsa_key(self.passphrase, self.rsakey_filepath)
@@ -57,6 +58,10 @@ class PassPacker():
     def all_show(self):
         self.unlock()
         pprint(self.password_dict)
+
+    def raw_all_show(self):
+        self.unlock()
+        print(self.password_dict)
 
     def overwrite(self):
         self.unlock()
@@ -110,7 +115,7 @@ class PassPacker():
         Exception("not prepared yet.")
 
     def recv_commands(self):
-        funcs = [self.show_one, self.all_show, self.find,
+        funcs = [self.show_one, self.all_show, self.raw_all_show, self.find,
                  self.add_password, self.dict_add_password, self.change_key, self.exit]
         names = [_insert_bracket(f.__name__) for f in funcs]
         dict_input_to_names = {
