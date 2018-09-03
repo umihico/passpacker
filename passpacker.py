@@ -9,6 +9,8 @@ except (Exception, ) as e:
     import rsa_file_func
     import file_path_setting
 
+SHOW_PASSWORD = True
+
 
 def _insert_bracket(str_): return f'({str_[:3]}){str_[3:]}'
 
@@ -28,11 +30,15 @@ class PassPacker():
         self.password_filepath = file_path_setting.PASSWORD_FILEPATH
         self.rsakey_filepath = file_path_setting.RSAKEY_FILEPATH
 
+    def __call__(self, arg_password):
+        self.unlock(arg_password)
+        return dict(self.password_dict.items())
+
     def return_dict(self):
         self.unlock()
         return dict(self.password_dict.items())
 
-    def unlock(self):
+    def unlock(self, arg_password=None):
         if self.unlocked:
             return
         if not os.path.isfile(self.rsakey_filepath):
@@ -42,7 +48,11 @@ class PassPacker():
             rsa_file_func.gen_rsa_key(self.passphrase, self.rsakey_filepath)
         if os.path.isfile(self.password_filepath):
             while True:
-                self.passphrase = input_with_msg('', show_input=True)
+                if arg_password is None:
+                    self.passphrase = input_with_msg(
+                        '', show_input=SHOW_PASSWORD)
+                else:
+                    self.passphrase = arg_password
                 try:
                     string_data = rsa_file_func.decrypt_data(
                         self.password_filepath, self.rsakey_filepath, self.passphrase)
@@ -95,8 +105,8 @@ class PassPacker():
             self.password_dict[key] = value
         self.overwrite()
 
-    def __getitem__(self, key):
-        self.unlock()
+    def __getitem__(self, key, password=None):
+        self.unlock(password)
         key_lower = key.lower()
         if key_lower not in self.password_dict:
             print(key_lower, 'is missing.')
